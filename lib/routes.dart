@@ -3,4 +3,5 @@ class Routes {
   static const savings = '/savings';
   // static const financeAssistant = '/finance_assistant';
   static const admin = '/admin';
+  static const loading = '/loading';
 }

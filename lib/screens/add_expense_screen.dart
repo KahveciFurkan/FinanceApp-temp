@@ -62,7 +62,9 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     }
 
     final expense = Expense(
-      id: widget.editingExpense?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      id:
+          widget.editingExpense?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
       title: title,
       amount: amount,
       category: category,
@@ -81,13 +83,17 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   void _showAlert(String message) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Uyarı'),
-        content: Text(message),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Tamam')),
-        ],
-      ),
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Uyarı'),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Tamam'),
+              ),
+            ],
+          ),
     );
   }
 
@@ -98,38 +104,47 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => SizedBox(
-        height: 250,
-        child: Column(
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Kategori Seçin',
-                style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(
-              child: ListView.separated(
-                itemCount: _categories.length,
-                separatorBuilder: (_, __) => const Divider(color: Colors.orange),
-                itemBuilder: (ctx, i) {
-                  final cat = _categories[i];
-                  return ListTile(
-                    title: Text(cat, style: const TextStyle(color: Colors.white)),
-                    onTap: () {
-                      setState(() {
-                        _category = cat;
-                      });
-                      Navigator.of(context).pop();
+      builder:
+          (ctx) => SizedBox(
+            height: 250,
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Kategori Seçin',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: _categories.length,
+                    separatorBuilder:
+                        (_, __) => const Divider(color: Colors.orange),
+                    itemBuilder: (ctx, i) {
+                      final cat = _categories[i];
+                      return ListTile(
+                        title: Text(
+                          cat,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            _category = cat;
+                          });
+                          Navigator.of(context).pop();
+                        },
+                      );
                     },
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
     );
   }
 
@@ -149,7 +164,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               child: Center(
                 child: CircularProgressIndicator(color: Colors.orange),
               ),
-            )
+            ),
         ],
       ),
       body: Padding(
@@ -209,7 +224,10 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             GestureDetector(
               onTap: _showCategoryPicker,
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 10,
+                ),
                 decoration: BoxDecoration(
                   border: Border.all(color: const Color(0xFFFF9F40)),
                   borderRadius: BorderRadius.circular(5),
@@ -237,27 +255,43 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF7043),
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 25),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                      horizontal: 25,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                     elevation: 5,
                   ),
                   onPressed: _isLoading ? null : _saveExpense,
-                  child: Text(isEditing ? 'Güncelle' : 'Kaydet', style: const TextStyle(fontSize: 16)),
+                  child: Text(
+                    isEditing ? 'Güncelle' : 'Kaydet',
+                    style: const TextStyle(fontSize: 16),
+                  ),
                 ),
 
                 // Anasayfaya Dön
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0288d1),
-                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 25),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 14,
+                      horizontal: 25,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                     elevation: 5,
                   ),
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Anasayfaya dön', style: TextStyle(fontSize: 16)),
+                  child: const Text(
+                    'Anasayfaya dön',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),
