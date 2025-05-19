@@ -78,7 +78,7 @@ class AppDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Text(
-                '© 2025 FFinance',
+                '© 2025 FFinity',
                 style: TextStyle(color: inactiveColor, fontSize: 12),
               ),
             ),
