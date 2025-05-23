@@ -44,7 +44,7 @@ class PiggyBankWidget extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           Text(
-            'Toplam Birikim',
+            'Toplam',
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: const Color.fromARGB(207, 205, 240, 8),

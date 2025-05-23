@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class SavingsGoal {
   final String title;
   final double targetAmount;
@@ -26,3 +28,34 @@ class SavingsTransaction {
   });
 }
 
+class Subscription {
+  final dynamic key;
+  final String name;
+  final double price;
+  final DateTime renewDate;
+  final String category;
+  final int iconCodePoint; // IconData yerine iconun codePoint'ini tutacağız
+  final int colorValue; // Renk için color.value
+  final bool isFrozen;
+  final bool isPaid;
+  final DateTime paidMonth;
+  final VoidCallback? onTogglePaid;
+
+  Subscription({
+    this.key,
+    required this.name,
+    required this.price,
+    required this.renewDate,
+    required this.category,
+    required this.iconCodePoint,
+    required this.colorValue,
+    this.isFrozen = false,
+    this.isPaid = false,
+    DateTime? paidMonth,
+    this.onTogglePaid,
+  }) : paidMonth = paidMonth ?? DateTime.now();
+
+  IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
+
+  Color get color => Color(colorValue);
+}

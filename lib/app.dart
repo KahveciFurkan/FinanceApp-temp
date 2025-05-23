@@ -1,3 +1,4 @@
+import 'package:ff/screens/subscription/subscription_screen.dart';
 import 'package:flutter/material.dart';
 import './screens/home_screen.dart';
 import './screens/savings_screen.dart';
@@ -16,7 +17,7 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const SavingsScreen(), 
+    const SavingsScreen(),
     Center(
       child: Text(
         'Asistan Sayfası',
@@ -24,6 +25,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
     ),
     const TransactionsScreen(),
+    const SubscriptionScreen(),
   ];
 
   final Map<int, String> _titles = {
@@ -31,6 +33,7 @@ class _MainScreenState extends State<MainScreen> {
     1: 'Birikimler',
     2: 'Asistan',
     3: 'İşlemler',
+    4: 'Abonelikler',
   };
 
   void _onItemTapped(int index) {
@@ -43,9 +46,7 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _selectedIndex = index;
     });
-    await Future.delayed(
-      const Duration(milliseconds: 250),
-    );
+    await Future.delayed(const Duration(milliseconds: 250));
     Navigator.of(context).pop();
   }
 

@@ -64,7 +64,6 @@ class _SavingsScreenState extends State<SavingsScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF1C1C1E),
       appBar: AppBar(
-        title: const Text('Birikimlerim'),
         backgroundColor: const Color(0xFF1C1C1E),
         elevation: 0,
         automaticallyImplyLeading: true,

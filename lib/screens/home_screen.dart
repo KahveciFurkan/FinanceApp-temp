@@ -363,77 +363,73 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildBarChart() {
-    final currentExpenses = currentYearExpenses;
-    if (currentExpenses.isEmpty) return const SizedBox();
+ Widget buildBarChart() {
+  final currentExpenses = currentYearExpenses;
+  if (currentExpenses.isEmpty) return const SizedBox();
 
-    final maxExpense = currentExpenses.reduce((a, b) => a > b ? a : b);
-    final barWidth = 20.0;
-    final List<String> monthNames = [
-      'Oca',
-      'Şub',
-      'Mar',
-      'Nis',
-      'May',
-      'Haz',
-      'Tem',
-      'Ağu',
-      'Eyl',
-      'Eki',
-      'Kas',
-      'Ara',
-    ];
+  final maxExpense = currentExpenses.reduce((a, b) => a > b ? a : b);
+  final List<String> monthNames = [
+    'Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz',
+    'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara',
+  ];
 
-    return SizedBox(
-      height: 180,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(12, (index) {
-          final height =
-              maxExpense == 0
-                  ? 0.0
-                  : (currentExpenses[index] / maxExpense) * 150;
-          final isSelected = selectedMonthIndex == index;
+  return SizedBox(
+    height: 180,
+    child: LayoutBuilder(
+      builder: (context, constraints) {
+        // Dinamik bar genişliği hesapla
+        final availableWidth = constraints.maxWidth;
+        final barWidth = (availableWidth / 15).clamp(12, 30).toDouble(); // Min 12, Max 30
 
-          return GestureDetector(
-            onTap: () {
-              setState(() {
-                selectedMonthIndex = index;
-              });
-              final snackBar = SnackBar(
-                content: Text(
-                  '${monthNames[index]} ayı gideri: ${currentExpenses[index]} ₺',
-                  style: const TextStyle(color: Colors.black87),
-                ),
-                backgroundColor: Colors.orangeAccent,
-                duration: const Duration(seconds: 2),
-              );
-              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-            },
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  width: barWidth,
-                  height: height,
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.orangeAccent : Colors.grey[700],
-                    borderRadius: BorderRadius.circular(5),
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(12, (index) {
+            final currentExpense = currentExpenses[index];
+            final height = currentExpense == 0 
+                ? 10.0 
+                : (maxExpense == 0 ? 0.0 : (currentExpense / maxExpense) * 150);
+            final isSelected = selectedMonthIndex == index;
+
+            return GestureDetector(
+              onTap: () {
+                setState(() => selectedMonthIndex = index);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '${monthNames[index]} ayı gideri: ${currentExpense} ₺',
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                    backgroundColor: Colors.orangeAccent,
+                    duration: const Duration(seconds: 2),
                   ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  monthNames[index],
-                  style: const TextStyle(color: Colors.orangeAccent),
-                ),
-              ],
-            ),
-          );
-        }),
-      ),
-    );
-  }
+                );
+              },
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    width: barWidth, // Dinamik genişlik
+                    height: height,
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.orangeAccent : Colors.grey[700],
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    monthNames[index],
+                    style: const TextStyle(color: Colors.orangeAccent),
+                  ),
+                ],
+              ),
+            );
+          }),
+        );
+      },
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

@@ -74,6 +74,7 @@ class AppDrawer extends StatelessWidget {
             buildMenuItem('Birikimler', Icons.savings, 1),
             buildMenuItem('Asistan', Icons.assistant, 2),
             buildMenuItem('İşlemler', Icons.list_alt, 3), // Daha uygun ikon
+            buildMenuItem('Abonelikler', Icons.autorenew, 4), // Daha uygun ikon
             const Spacer(),
             Padding(
               padding: const EdgeInsets.all(16.0),
