@@ -1,3 +1,4 @@
+import 'package:ff/screens/assistant/assistant_screen.dart';
 import 'package:ff/screens/subscription/subscription_screen.dart';
 import 'package:flutter/material.dart';
 import './screens/home_screen.dart';
@@ -18,12 +19,7 @@ class _MainScreenState extends State<MainScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const SavingsScreen(),
-    Center(
-      child: Text(
-        'Asistan Sayfası',
-        style: TextStyle(color: Colors.white, fontSize: 22),
-      ),
-    ),
+    const FinanceAssistantScreen(),
     const TransactionsScreen(),
     const SubscriptionScreen(),
   ];
@@ -59,6 +55,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1C1C1E), // Koyu arka plan
+        surfaceTintColor: const Color(0xFF1C1C1E),
         title: Text(_titles[_selectedIndex]!),
         titleTextStyle: const TextStyle(
           color: Colors.orangeAccent, // Başlık rengi

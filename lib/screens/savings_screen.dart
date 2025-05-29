@@ -65,6 +65,7 @@ class _SavingsScreenState extends State<SavingsScreen> {
       backgroundColor: const Color(0xFF1C1C1E),
       appBar: AppBar(
         backgroundColor: const Color(0xFF1C1C1E),
+        surfaceTintColor: const Color(0xFF1C1C1E),
         elevation: 0,
         automaticallyImplyLeading: true,
       ),
@@ -75,7 +76,6 @@ class _SavingsScreenState extends State<SavingsScreen> {
           children: [
             PiggyBankWidget(totalSavings: userTotalSavings),
             const SizedBox(height: 24),
-
             // Hedefler Başlığı
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -104,8 +104,6 @@ class _SavingsScreenState extends State<SavingsScreen> {
             ),
 
             const SizedBox(height: 24),
-
-            
           ],
         ),
       ),

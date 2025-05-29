@@ -1,3 +1,4 @@
+import 'package:ff/screens/expenses/expense_adapter.dart';
 import 'package:ff/screens/subscription/subscription_adapter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -16,8 +17,11 @@ void main() async {
   await initializeDateFormatting('tr_TR');
   Hive.registerAdapter(SavingsTransactionAdapter()); // Adapter'ı burada kaydet
   Hive.registerAdapter(SubscriptionAdapter()); // Adapter'ı burada kaydet
+  Hive.registerAdapter(ExpenseAdapter()); // Adapter'ı burada kaydet
   await Hive.openBox<SavingsTransaction>('transactionsBox');
   await Hive.openBox<Subscription>('subscriptions');
+  // await Hive.deleteBoxFromDisk('expenses');
+  await Hive.openBox<Expense>('expenses');
 
   runApp(const FFApp());
 }

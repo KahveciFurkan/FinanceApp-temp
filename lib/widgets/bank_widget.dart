@@ -5,9 +5,10 @@ import 'package:lottie/lottie.dart';
 class PiggyBankWidget extends StatelessWidget {
   final double totalSavings;
 
-  const PiggyBankWidget({Key? key, required this.totalSavings}) : super(key: key);
+  const PiggyBankWidget({Key? key, required this.totalSavings})
+    : super(key: key);
 
- @override
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -36,7 +37,8 @@ class PiggyBankWidget extends StatelessWidget {
             ),
             child: const Center(
               child: Icon(
-                Icons.attach_money, // Burada dilersen Icons.savings, Icons.attach_money gibi değişebilir
+                Icons
+                    .attach_money, // Burada dilersen Icons.savings, Icons.attach_money gibi değişebilir
                 size: 72,
                 color: Colors.white,
               ),
@@ -47,7 +49,7 @@ class PiggyBankWidget extends StatelessWidget {
             'Toplam',
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: const Color.fromARGB(207, 205, 240, 8),
+              color: Colors.greenAccent,
             ),
           ),
           const SizedBox(height: 8),
