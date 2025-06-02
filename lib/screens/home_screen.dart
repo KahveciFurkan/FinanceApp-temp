@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../types/type.dart';
-
+import 'package:wake_on_lan/wake_on_lan.dart';
+import '../utils/helper/helperfunctions.dart';
 import 'expenses/add_expense_screen.dart';
-
+import 'package:http/http.dart' as http;
 import 'expenses/expense_adapter.dart'; // Expense modelinin olduğu dosya (varsayılan import)
 
 // Öncelikle Expense modelin Hive uyumlu olmalı (TypeAdapter ile) -> Bunu sağlamalısın.
@@ -37,6 +38,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     await Hive.openBox<Expense>('expenses');
     await loadAllYears();
+  }
+
+  Future<void> sleepPc() async {
+    final url = Uri.parse('http://192.168.1.5:5000/pc/sleep');
+    await http.post(url);
+  }
+
+  bool isPcOn = false;
+
+  // WakeOnLan fonksiyonunu çağır
+  Future<void> wakePc() async {
+    String ipv4 = '192.168.1.255';
+    String mac = '2C:F0:5D:6E:A6:25';
+    IPAddress ipv4Address = IPAddress(ipv4);
+    MACAddress macAddress = MACAddress(mac);
+    await WakeOnLAN(ipv4Address, macAddress).wake();
+
+    // 10 saniye sonra kapalıya çekelim örnek için (test amaçlı)
+    Future.delayed(const Duration(seconds: 10), () {
+      setState(() {
+        isPcOn = false;
+      });
+    });
   }
 
   Future<void> loadAllYears() async {
@@ -77,9 +101,6 @@ class _HomeScreenState extends State<HomeScreen> {
   int get totalYearlyExpense {
     return currentYearExpenses.fold(0, (sum, amount) => sum + amount);
   }
-
-  // ... Kalan tüm fonksiyon ve widget'lar aynı kalabilir, sadece yearlyExpenses tipi değiştiği için
-  // ufak ufak ufaklıklar hariç aynı şekilde çalışacak.
 
   // Örnek olarak, aşağıda buildYearDropdown() fonksiyonunda ufak güncelleme:
   Widget buildYearDropdown() {
@@ -135,6 +156,21 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.orangeAccent,
             ),
             onPressed: showAdminPasswordDialog,
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.computer,
+              color: isPcOn ? Colors.greenAccent : Colors.greenAccent.withOpacity(0.5),
+            ),
+            onPressed: wakePc,
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons
+                  .bedtime, // Uyku moduna uygun bir ikon (yoksa başka ikon da kullanabilirsin)
+              color: Colors.blueAccent,
+            ),
+            onPressed: sleepPc, // Uyku fonksiyonunu burada çağıracağız
           ),
         ],
       ),
