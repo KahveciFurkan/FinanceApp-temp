@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../types/type.dart';
 import 'package:wake_on_lan/wake_on_lan.dart';
 import '../utils/helper/helperfunctions.dart';
+import '../widgets/expensefab/expensefab.dart';
 import 'expenses/add_expense_screen.dart';
 import 'package:http/http.dart' as http;
 import 'expenses/expense_adapter.dart'; // Expense modelinin olduğu dosya (varsayılan import)
@@ -160,7 +161,10 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: Icon(
               Icons.computer,
-              color: isPcOn ? Colors.greenAccent : Colors.greenAccent.withOpacity(0.5),
+              color:
+                  isPcOn
+                      ? Colors.greenAccent
+                      : Colors.greenAccent.withOpacity(0.5),
             ),
             onPressed: wakePc,
           ),
@@ -174,11 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: openAddExpenseScreen,
-        backgroundColor: const Color.fromARGB(255, 159, 218, 245),
-        child: const Icon(Icons.add_card, color: Colors.black),
-      ),
+      floatingActionButton: ExpenseFAB(onPressed: openAddExpenseScreen),
       body:
           isLoading
               ? const Center(child: CircularProgressIndicator())

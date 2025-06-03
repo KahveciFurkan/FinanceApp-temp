@@ -41,10 +41,7 @@ class MainActivity : FlutterActivity() {
             .setLabel("Tutarı girin")
             .build()
 
-        val intent = Intent(context, QuickExpenseReceiver::class.java).apply {
-            putExtra("category", "Yiyecek")
-        }
-
+        
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             0,
