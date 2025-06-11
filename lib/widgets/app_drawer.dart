@@ -47,12 +47,10 @@ class AppDrawer extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               alignment: Alignment.centerLeft,
               decoration: BoxDecoration(
-                color: const Color(
-                  0xFF2E2E33,
-                ), // Dark temaya uyumlu koyu gri ton
+                color: backgroundColor, // Dark temaya uyumlu koyu gri ton
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.6),
+                    color: backgroundColor,
                     offset: const Offset(0, 3),
                     blurRadius: 6,
                   ),

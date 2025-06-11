@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../types/type.dart';
 import '../../widgets/subscription/subscription_calendar.dart';
 import '../../widgets/subscription/subscription_card.dart';
+import 'add_subscription_bottom_sheet.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -124,141 +125,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         ),
       );
     }
-  }
-
-  void _showAddSubscriptionDialog() {
-    _nameController.clear();
-    _priceController.clear();
-    _renewDate = null;
-    _selectedCategory = null;
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Yeni Abonelik Ekle"),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Abonelik Adı',
-                        ),
-                        validator:
-                            (value) =>
-                                value == null || value.isEmpty
-                                    ? 'Ad gerekli'
-                                    : null,
-                      ),
-                      TextFormField(
-                        controller: _priceController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        decoration: const InputDecoration(
-                          labelText: 'Fiyat (₺)',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Fiyat gerekli';
-                          }
-                          final parsed = double.tryParse(
-                            value.replaceAll(',', '.'),
-                          );
-                          if (parsed == null || parsed < 0) {
-                            return 'Geçerli bir fiyat girin';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              _renewDate == null
-                                  ? 'Yenileme Tarihi Seçin'
-                                  : 'Tarih: ${_renewDate!.day}.${_renewDate!.month}.${_renewDate!.year}',
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              final picked = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2000),
-                                lastDate: DateTime(2100),
-                              );
-                              if (picked != null) {
-                                setState(() {
-                                  _renewDate = picked;
-                                });
-                              }
-                            },
-                            child: const Text('Seç'),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        decoration: const InputDecoration(
-                          labelText: 'Kategori',
-                        ),
-                        onChanged: (val) => _selectedCategory = val,
-                        validator:
-                            (value) =>
-                                value == null || value.isEmpty
-                                    ? 'Kategori gerekli'
-                                    : null,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              child: const Text("İptal"),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            ElevatedButton(
-              child: const Text("Ekle"),
-              onPressed: () {
-                if (_formKey.currentState!.validate() && _renewDate != null) {
-                  final newSubscription = Subscription(
-                    name: _nameController.text,
-                    price: double.parse(
-                      _priceController.text.replaceAll(',', '.'),
-                    ),
-                    renewDate: _renewDate!,
-                    category: _selectedCategory ?? 'Diğer',
-                    iconCodePoint: Icons.subscriptions.codePoint,
-                    colorValue: Colors.blue.value,
-                    isFrozen: false,
-                    isPaid: false,
-                    paidMonth: DateTime.now(),
-                    onTogglePaid: () {},
-                  );
-                  subscriptionBox.add(newSubscription);
-                  Navigator.of(context).pop();
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("${newSubscription.name} eklendi")),
-                  );
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   @override
@@ -390,8 +256,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _showAddSubscriptionDialog,
-        child: const Icon(Icons.add),
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder:
+                (context) => AddSubscriptionBottomSheet(
+                  subscriptionBox: subscriptionBox,
+                ),
+          );
+        },
+        child: const Icon(Icons.subscriptions),
         tooltip: 'Yeni Abonelik Ekle',
       ),
     );

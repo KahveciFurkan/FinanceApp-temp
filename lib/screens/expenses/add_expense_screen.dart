@@ -18,6 +18,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _titleController = TextEditingController();
   final _amountController = TextEditingController();
   List<String> _titleSuggestions = [];
+  List<Map<String, Object?>> _visibleCategories = [];
   String? _category;
   String? _aiSuggestion;
 
@@ -65,6 +66,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   void initState() {
     super.initState();
     _updateSuggestions('');
+    _visibleCategories = _categories.take(5).toList();
     if (widget.editingExpense != null) {
       _titleController.text = widget.editingExpense!.title;
       _amountController.text = widget.editingExpense!.amount.toString();
@@ -74,7 +76,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   String? _suggestedCategory;
   double? _confidenceScore;
-
   void _generateAISuggestion() async {
     final title = _titleController.text.toLowerCase();
     final warning = await getImprovedAISuggestion(title);
@@ -92,8 +93,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       _aiSuggestion = result.suggestionText;
       _suggestedCategory = result.category;
       _confidenceScore = result.confidence;
+      _visibleCategories = getVisibleCategories(title, _suggestedCategory);
     });
-    getVisibleCategories(title, _suggestedCategory);
   }
 
   List<Map<String, Object?>> getVisibleCategories(
@@ -102,16 +103,37 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   ) {
     final input = titleInput.toLowerCase();
 
+    // 1. Boş input ise, ilk 5 kategori dön
     if (input.isEmpty) {
       return _categories.take(5).toList();
     }
 
+    // 2. AI önerisi varsa ve _categories içinde geçiyorsa onu dön
     if (aiSuggestedCategory != null) {
-      return [
-        _categories.firstWhere((cat) => cat['name'] == aiSuggestedCategory),
-      ];
+      final suggested = _categories.firstWhere(
+        (cat) =>
+            cat['name'].toString().toLowerCase() ==
+            aiSuggestedCategory.toLowerCase(),
+        orElse: () => _categories.firstWhere((cat) => cat['name'] == "Diğer"),
+      );
+      return [suggested];
     }
 
+    // 3. Keyword eşleşmesini ara
+    for (final entry in keywordCategoryMap.entries) {
+      final categoryName = entry.key.toLowerCase();
+      final keywords = entry.value.map((e) => e.toLowerCase());
+
+      if (keywords.any((kw) => input.contains(kw))) {
+        final matchedCategory = _categories.firstWhere(
+          (cat) => cat['name'].toString().toLowerCase() == categoryName,
+          orElse: () => _categories.firstWhere((cat) => cat['name'] == "Diğer"),
+        );
+        return [matchedCategory];
+      }
+    }
+
+    // 4. Hiçbir eşleşme yoksa "Diğer" kategorisi
     return [_categories.firstWhere((cat) => cat['name'] == "Diğer")];
   }
 
@@ -192,7 +214,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       spacing: 12,
       runSpacing: 12,
       children:
-          _categories.take(5).map((cat) {
+          _visibleCategories.take(5).map((cat) {
             final isSelected = _category == cat['name'] as String?;
             return GestureDetector(
               onTap: () => setState(() => _category = cat['name'] as String?),
