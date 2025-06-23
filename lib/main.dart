@@ -1,13 +1,13 @@
 import 'package:ff/screens/expenses/expense_adapter.dart';
 import 'package:ff/screens/subscription/subscription_adapter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import './types/type.dart';
 import './types/savings_transaction_adapter.dart';
 import 'screens/splash/splash_screen.dart';
+import 'service/weather_notifier.dart';
 import 'utils/hive/rejected_suggestion.dart';
 
 void main() async {
@@ -24,7 +24,8 @@ void main() async {
   // await Hive.deleteBoxFromDisk('expenses');
   await Hive.openBox<Expense>('expenses');
 
-  QuickExpenseChannel.initListener();
+  final weatherNotifier = WeatherNotifier();
+  await weatherNotifier.initialize();
   runApp(const FFApp());
 }
 
@@ -39,31 +40,5 @@ class FFApp extends StatelessWidget {
       theme: ThemeData.dark(),
       home: const SplashScreen(),
     );
-  }
-}
-
-class QuickExpenseChannel {
-  static const MethodChannel _channel = MethodChannel('quick_expense_channel');
-
-  static void initListener() {
-    _channel.setMethodCallHandler((call) async {
-      if (call.method == "addQuickExpense") {
-        final data = call.arguments as String;
-        final parts = data.split('|');
-        if (parts.length == 2) {
-          final category = parts[0];
-          final amount = double.tryParse(parts[1].replaceAll(",", ".")) ?? 0.0;
-
-          final box = await Hive.openBox('expenses');
-          await box.add({
-            'category': category,
-            'amount': amount,
-            'date': DateTime.now().toIso8601String(),
-          });
-
-          print("✅ Hızlı harcama kaydedildi: $category - $amount");
-        }
-      }
-    });
   }
 }

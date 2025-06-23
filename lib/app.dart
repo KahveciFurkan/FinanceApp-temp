@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import './screens/home_screen.dart';
 import './screens/savings_screen.dart';
 import './screens/transactions_screen.dart';
-import './widgets/app_drawer.dart'; // Drawer import
+import './widgets/app_drawer.dart';
+import 'screens/node/mind_map_screen.dart'; // Drawer import
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -22,6 +23,7 @@ class _MainScreenState extends State<MainScreen> {
     const FinanceAssistantScreen(),
     const TransactionsScreen(),
     const SubscriptionScreen(),
+    const MindMapScreen(),
   ];
 
   final Map<int, String> _titles = {
@@ -30,6 +32,7 @@ class _MainScreenState extends State<MainScreen> {
     2: 'Asistan',
     3: 'İşlemler',
     4: 'Abonelikler',
+    5: 'Notlar',
   };
 
   void _onItemTapped(int index) {
