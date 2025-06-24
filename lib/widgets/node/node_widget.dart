@@ -3,7 +3,6 @@ import '../../types/node_model.dart';
 
 class NodeWidget extends StatefulWidget {
   final NodeModel node;
-  // onPositionChanged artık isDragEnd parametresi alacak
   final void Function(
     NodeModel updatedNode, {
     required Offset globalPosition,
@@ -29,6 +28,7 @@ class NodeWidget extends StatefulWidget {
 
 class _NodeWidgetState extends State<NodeWidget> {
   late Offset position;
+  final GlobalKey _nodeKey = GlobalKey(); // Nodun boyutunu takip etmek için
 
   @override
   void initState() {
@@ -41,8 +41,6 @@ class _NodeWidgetState extends State<NodeWidget> {
       position = newLocalPosition;
     });
 
-    final globalPosition = details.globalPosition;
-
     final updatedNode = widget.node.copyWith(
       posX: newLocalPosition.dx,
       posY: newLocalPosition.dy,
@@ -50,25 +48,28 @@ class _NodeWidgetState extends State<NodeWidget> {
 
     widget.onPositionChanged(
       updatedNode,
-      globalPosition: globalPosition,
+      globalPosition: details.globalPosition,
       isDragEnd: false,
     );
   }
 
   void _handlePanEnd(DragEndDetails details) {
+    final renderBox = _nodeKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+
+    // Nodun merkezini global koordinatlarda hesapla
+    final nodeCenter = renderBox.localToGlobal(
+      Offset(renderBox.size.width / 2, renderBox.size.height / 2),
+    );
+
     final updatedNode = widget.node.copyWith(
       posX: position.dx,
       posY: position.dy,
     );
 
-    // Burada globalPosition yok, ama _updatePosition'da zaten en son güncelledik
-    // Yine de silme için son pozisyon gerekli. Kısaca position'ın global karşılığını bulabiliriz:
-    final renderBox = context.findRenderObject() as RenderBox;
-    final globalPosition = renderBox.localToGlobal(Offset.zero);
-
     widget.onPositionChanged(
       updatedNode,
-      globalPosition: globalPosition,
+      globalPosition: nodeCenter, // DÜZELTME: Merkez pozisyonu kullan
       isDragEnd: true,
     );
   }
@@ -119,10 +120,11 @@ class _NodeWidgetState extends State<NodeWidget> {
         onPanUpdate: (details) {
           _updatePosition(position + details.delta, details);
         },
-        onPanEnd: (_) => _handlePanEnd,
+        onPanEnd: _handlePanEnd, // DÜZELTME: Fonksiyon referansı doğrudan
         onLongPress: _editNodePopup,
         onTap: widget.onTap,
         child: Card(
+          key: _nodeKey, // Nodun boyutunu takip etmek için
           elevation: 6,
           color: Colors.blueGrey[800],
           shape: RoundedRectangleBorder(

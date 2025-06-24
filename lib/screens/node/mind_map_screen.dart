@@ -66,6 +66,7 @@ class _MindMapScreenState extends State<MindMapScreen> {
       isDragging = !isDragEnd;
 
       if (isDragEnd) {
+        // DÜZELTME: globalPosition'ı doğrudan kullan
         if (_isOverTrash(globalPosition)) {
           _deleteNode(id);
         }
@@ -76,22 +77,28 @@ class _MindMapScreenState extends State<MindMapScreen> {
     });
   }
 
-  bool _isOverTrash(Offset globalPosition) {
+  bool _isOverTrash(Offset globalNodeCenter) {
     final RenderBox? trashRenderBox =
         trashKey.currentContext?.findRenderObject() as RenderBox?;
     if (trashRenderBox == null) return false;
 
+    // Çöp kutusunun merkezini hesapla
     final trashPos = trashRenderBox.localToGlobal(Offset.zero);
     final trashSize = trashRenderBox.size;
-
-    final rect = Rect.fromLTWH(
-      trashPos.dx,
-      trashPos.dy,
-      trashSize.width,
-      trashSize.height,
+    final trashCenter = Offset(
+      trashPos.dx + trashSize.width / 2,
+      trashPos.dy + trashSize.height / 2,
     );
 
-    return rect.contains(globalPosition);
+    // Nodun merkezi ile çöp kutusu merkezi arasındaki mesafe
+    final distance = (globalNodeCenter - trashCenter).distance;
+
+    // Çöp kutusunun yarıçapı (daire olduğu için genişliğin yarısı)
+    final trashRadius = trashSize.width / 2;
+
+    // Mesafe yarıçaptan küçükse (tolerans ekle)
+
+    return distance < trashRadius + 30;
   }
 
   void _startConnection(String nodeId) {
@@ -174,31 +181,46 @@ class _MindMapScreenState extends State<MindMapScreen> {
           }).toList(),
 
           // Çöp kutusu, sadece sürükleme sırasında gösterilir
+          // Çöp kutusu widget'ı
+          // MindMapScreen build metodundaki çöp kutusu widget'ını değiştir:
           if (isDragging)
             Positioned(
               key: trashKey,
               bottom: 40,
               left: MediaQuery.of(context).size.width / 2 - 30,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.redAccent.withOpacity(0.85),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.redAccent.withOpacity(0.6),
-                      blurRadius: 12,
-                      spreadRadius: 3,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent.withOpacity(0.85),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.redAccent.withOpacity(0.6),
+                          blurRadius: 12,
+                          spreadRadius: 3,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.white,
-                  size: 34,
-                ),
+                    child: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.white,
+                      size: 34,
+                    ),
+                  ),
+                  // Debug için merkez noktası
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
