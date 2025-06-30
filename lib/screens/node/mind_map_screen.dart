@@ -1,14 +1,16 @@
+// mind_map_screen.dart - Hive destekli zihin haritası ekranı
+
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+
 import '../../types/node_model.dart';
+import '../../widgets/node/connection_model.dart';
+import '../../widgets/node/help_dialog.dart';
+import '../../widgets/node/mind_map_app_bar.dart';
+import '../../widgets/node/mind_map_canvas.dart';
+import '../../widgets/node/trash_bin.dart';
 import '../../widgets/node/node_widget.dart';
-import 'package:uuid/uuid.dart';
-
-class ConnectionModel {
-  final String fromId;
-  final String toId;
-
-  ConnectionModel({required this.fromId, required this.toId});
-}
 
 class MindMapScreen extends StatefulWidget {
   const MindMapScreen({super.key});
@@ -18,257 +20,202 @@ class MindMapScreen extends StatefulWidget {
 }
 
 class _MindMapScreenState extends State<MindMapScreen> {
-  final List<Map<String, dynamic>> nodes = [];
-  final List<ConnectionModel> connections = [];
-  final uuid = const Uuid();
+  late Box<NodeModel> nodeBox;
+  late Box<ConnectionModel> connectionBox;
+
+  List<NodeModel> nodes = [];
+  List<ConnectionModel> connections = [];
+
+  double _scale = 1.0;
+  double _previousScale = 1.0;
+  Offset _offset = Offset.zero;
+  Offset _startPanOffset = Offset.zero;
 
   String? _connectingNodeId;
+  String? _selectedNodeId;
 
-  // Drag & drop için
-  bool isDragging = false;
-  Offset? dragPosition;
-  String? draggingNodeId;
-
-  // Çöp kutusu widget'ının konumu için key
   final GlobalKey trashKey = GlobalKey();
+  bool isDragging = false;
 
-  void _addNode() {
-    setState(() {
-      nodes.add({
-        "id": uuid.v4(),
-        "title": "Yeni Not",
-        "posX": 50.0,
-        "posY": 50.0,
-      });
-    });
-  }
-
-  void _deleteNode(String id) {
-    setState(() {
-      nodes.removeWhere((node) => node['id'] == id);
-      connections.removeWhere((conn) => conn.fromId == id || conn.toId == id);
-    });
-  }
-
-  void _updateNodePosition(
-    String id,
-    Offset localOffset, {
-    required Offset globalPosition,
-    bool isDragEnd = false,
-  }) {
-    setState(() {
-      final node = nodes.firstWhere((element) => element['id'] == id);
-      node['posX'] = localOffset.dx;
-      node['posY'] = localOffset.dy;
-
-      dragPosition = localOffset;
-      draggingNodeId = id;
-      isDragging = !isDragEnd;
-
-      if (isDragEnd) {
-        // DÜZELTME: globalPosition'ı doğrudan kullan
-        if (_isOverTrash(globalPosition)) {
-          _deleteNode(id);
-        }
-        isDragging = false;
-        dragPosition = null;
-        draggingNodeId = null;
-      }
-    });
-  }
-
-  bool _isOverTrash(Offset globalNodeCenter) {
-    final RenderBox? trashRenderBox =
-        trashKey.currentContext?.findRenderObject() as RenderBox?;
-    if (trashRenderBox == null) return false;
-
-    // Çöp kutusunun merkezini hesapla
-    final trashPos = trashRenderBox.localToGlobal(Offset.zero);
-    final trashSize = trashRenderBox.size;
-    final trashCenter = Offset(
-      trashPos.dx + trashSize.width / 2,
-      trashPos.dy + trashSize.height / 2,
-    );
-
-    // Nodun merkezi ile çöp kutusu merkezi arasındaki mesafe
-    final distance = (globalNodeCenter - trashCenter).distance;
-
-    // Çöp kutusunun yarıçapı (daire olduğu için genişliğin yarısı)
-    final trashRadius = trashSize.width / 2;
-
-    // Mesafe yarıçaptan küçükse (tolerans ekle)
-
-    return distance < trashRadius + 30;
-  }
-
-  void _startConnection(String nodeId) {
-    setState(() {
-      if (_connectingNodeId == null) {
-        _connectingNodeId = nodeId;
-      } else if (_connectingNodeId != nodeId) {
-        connections.add(
-          ConnectionModel(fromId: _connectingNodeId!, toId: nodeId),
-        );
-        _connectingNodeId = null;
-      } else {
-        _connectingNodeId = null;
-      }
-    });
-  }
+  final double nodeWidth = 160;
+  final double nodeHeight = 100;
 
   @override
-  Widget build(BuildContext context) {
-    final Map<String, Offset> nodePositions = {
-      for (var node in nodes)
-        node['id'] as String: Offset(node['posX'], node['posY']),
-    };
+  void initState() {
+    super.initState();
+    nodeBox = Hive.box<NodeModel>('nodes');
+    connectionBox = Hive.box<ConnectionModel>('connections');
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Zihin Haritası"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _addNode,
-            tooltip: "Not Ekle",
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: ConnectionPainter(
-                connections: connections,
-                nodePositions: nodePositions,
-                highlightNodeId: _connectingNodeId,
-              ),
-            ),
-          ),
-          ...nodes.map((node) {
-            return NodeWidget(
-              node: NodeModel(
-                id: node['id'],
-                title: node['title'],
-                posX: node['posX'],
-                posY: node['posY'],
-              ),
-              onPositionChanged: (
-                updatedNode, {
-                required Offset globalPosition,
-                bool isDragEnd = false,
-              }) {
-                _updateNodePosition(
-                  updatedNode.id,
-                  Offset(updatedNode.posX, updatedNode.posY),
-                  globalPosition: globalPosition,
-                  isDragEnd: isDragEnd,
-                );
-              },
-              onTap: () {
-                _startConnection(node['id']);
-              },
-              onDelete: () => _deleteNode(node['id']),
-              onEdit: (updatedNode) {
-                setState(() {
-                  final targetNode = nodes.firstWhere(
-                    (n) => n['id'] == updatedNode.id,
-                  );
-                  targetNode['title'] = updatedNode.title;
-                });
-              },
-            );
-          }).toList(),
-
-          // Çöp kutusu, sadece sürükleme sırasında gösterilir
-          // Çöp kutusu widget'ı
-          // MindMapScreen build metodundaki çöp kutusu widget'ını değiştir:
-          if (isDragging)
-            Positioned(
-              key: trashKey,
-              bottom: 40,
-              left: MediaQuery.of(context).size.width / 2 - 30,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent.withOpacity(0.85),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.redAccent.withOpacity(0.6),
-                          blurRadius: 12,
-                          spreadRadius: 3,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.white,
-                      size: 34,
-                    ),
-                  ),
-                  // Debug için merkez noktası
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
+    nodes = nodeBox.values.toList();
+    connections = connectionBox.values.toList();
   }
-}
 
-class ConnectionPainter extends CustomPainter {
-  final List<ConnectionModel> connections;
-  final Map<String, Offset> nodePositions;
-  final String? highlightNodeId;
+  void _saveNodesToHive() {
+    nodeBox.clear();
+    for (var node in nodes) {
+      nodeBox.put(node.id, node);
+    }
+  }
 
-  ConnectionPainter({
-    required this.connections,
-    required this.nodePositions,
-    this.highlightNodeId,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..color = Colors.white70
-          ..strokeWidth = 3.0;
-
-    final highlightPaint =
-        Paint()
-          ..color = Colors.orangeAccent
-          ..strokeWidth = 4.0;
-
+  void _saveConnectionsToHive() {
+    connectionBox.clear();
     for (var connection in connections) {
-      final from = nodePositions[connection.fromId];
-      final to = nodePositions[connection.toId];
-
-      if (from != null && to != null) {
-        final isHighlighted =
-            highlightNodeId == connection.fromId ||
-            highlightNodeId == connection.toId;
-        canvas.drawLine(from, to, isHighlighted ? highlightPaint : paint);
-      }
+      connectionBox.put(connection.id, connection);
     }
   }
 
   @override
-  bool shouldRepaint(covariant ConnectionPainter oldDelegate) {
-    return connections != oldDelegate.connections ||
-        nodePositions != oldDelegate.nodePositions ||
-        highlightNodeId != oldDelegate.highlightNodeId;
+  Widget build(BuildContext context) {
+    final nodePositions = {
+      for (var node in nodes) node.id: Offset(node.posX, node.posY),
+    };
+
+    return Scaffold(
+      appBar: MindMapAppBar(
+        onAddNode: _addNode,
+        onAutoLayout: _autoLayout,
+        onUndo: _undo,
+        onRedo: _redo,
+        onCreateGroup: _createGroup,
+        onShowHelp: () => showHelpDialog(context),
+      ),
+      body: Stack(
+        children: [
+          MindMapCanvas(
+            nodes:
+                nodes
+                    .map(
+                      (n) => {
+                        'id': n.id,
+                        'title': n.title,
+                        'posX': n.posX,
+                        'posY': n.posY,
+                        'groupColor': n.groupColorValue,
+                        'noteType': n.noteType,
+                      },
+                    )
+                    .toList(),
+            connections: connections,
+            nodePositions: nodePositions,
+            scale: _scale,
+            offset: _offset,
+            onScaleStart: _onScaleStart,
+            onScaleUpdate: _onScaleUpdate,
+            clearHighlights: () => setState(() => _selectedNodeId = null),
+            nodeWidth: nodeWidth,
+            nodeHeight: nodeHeight,
+            connectingNodeId: _connectingNodeId,
+            buildNodes:
+                () => Stack(
+                  children:
+                      nodes.map((node) {
+                        return NodeWidget(
+                          key: ValueKey(node.id),
+                          node: node,
+                          isSelected: _selectedNodeId == node.id,
+                          isInConnectionMode: _connectingNodeId != null,
+                          connectionStartId: _connectingNodeId,
+                          connections: connections,
+                          nodeCenters: nodePositions,
+                          nodeWidth: nodeWidth,
+                          nodeHeight: nodeHeight,
+                          onEdit: (updatedNode) {
+                            setState(() {
+                              final index = nodes.indexWhere(
+                                (n) => n.id == updatedNode.id,
+                              );
+                              if (index != -1) {
+                                nodes[index] = updatedNode;
+                                _saveNodesToHive();
+                              }
+                            });
+                          },
+                          onPositionChanged: (
+                            updatedNode,
+                            center, {
+                            isDragEnd = false,
+                          }) {
+                            setState(() {
+                              final index = nodes.indexWhere(
+                                (n) => n.id == updatedNode.id,
+                              );
+                              if (index != -1) {
+                                nodes[index] = updatedNode;
+                                _saveNodesToHive();
+                              }
+                            });
+                          },
+                          onConnect: (fromId, toId) {
+                            setState(() {
+                              final newConn = ConnectionModel(
+                                id: UniqueKey().toString(),
+                                fromId: fromId,
+                                toId: toId,
+                              );
+                              connections.add(newConn);
+                              _connectingNodeId = null;
+                              _saveConnectionsToHive();
+                            });
+                          },
+                          onStartConnection: (nodeId) {
+                            setState(() => _connectingNodeId = nodeId);
+                          },
+                          trashKey: trashKey,
+                          onDelete: (nodeId) {
+                            setState(() {
+                              nodes.removeWhere((n) => n.id == nodeId);
+                              connections.removeWhere(
+                                (c) => c.fromId == nodeId || c.toId == nodeId,
+                              );
+                              _saveNodesToHive();
+                              _saveConnectionsToHive();
+                            });
+                          },
+                          onDraggingChanged: (dragging) {
+                            setState(() => isDragging = dragging);
+                          },
+                          onSelect: (nodeId) {
+                            setState(() => _selectedNodeId = nodeId);
+                          },
+                        );
+                      }).toList(),
+                ),
+          ),
+          TrashBin(isVisible: isDragging, key: trashKey),
+        ],
+      ),
+    );
   }
+
+  void _onScaleStart(ScaleStartDetails details) {
+    _previousScale = _scale;
+    _startPanOffset = _offset;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    setState(() {
+      _scale = _previousScale * details.scale;
+      if (details.scale == 1.0) {
+        _offset = _startPanOffset + details.focalPointDelta;
+      }
+    });
+  }
+
+  void _addNode() {
+    setState(() {
+      final id = UniqueKey().toString();
+      final newNode = NodeModel.createDefault(
+        id: id,
+        offset: const Offset(100, 100),
+      );
+      nodes.add(newNode);
+      _selectedNodeId = id;
+      _saveNodesToHive();
+    });
+  }
+
+  void _autoLayout() {}
+  void _undo() {}
+  void _redo() {}
+  void _createGroup(Color color) {}
 }

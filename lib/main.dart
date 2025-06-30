@@ -8,7 +8,9 @@ import './types/type.dart';
 import './types/savings_transaction_adapter.dart';
 import 'screens/splash/splash_screen.dart';
 import 'service/weather_notifier.dart';
+import 'types/node_model.dart';
 import 'utils/hive/rejected_suggestion.dart';
+import 'widgets/node/connection_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +20,11 @@ void main() async {
   Hive.registerAdapter(SavingsTransactionAdapter()); // Adapter'ı burada kaydet
   Hive.registerAdapter(SubscriptionAdapter()); // Adapter'ı burada kaydet
   Hive.registerAdapter(ExpenseAdapter()); // Adapter'ı burada kaydet
+  Hive.registerAdapter(NodeModelAdapter());
+  Hive.registerAdapter(ConnectionModelAdapter());
+
+  await Hive.openBox<NodeModel>('nodes');
+  await Hive.openBox<ConnectionModel>('connections');
   await Hive.openBox<SavingsTransaction>('transactionsBox');
   await Hive.openBox<Subscription>('subscriptions');
   await Hive.openBox<RejectedSuggestion>('rejectedSuggestions');

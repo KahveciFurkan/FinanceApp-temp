@@ -50,8 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // WakeOnLan fonksiyonunu çağır
   Future<void> wakePc() async {
-    String ipv4 = '192.168.1.255';
-    String mac = '2C:F0:5D:6E:A6:25';
+    String ipv4 = ipv4Add;
+    String mac = macAddres;
     IPAddress ipv4Address = IPAddress(ipv4);
     MACAddress macAddress = MACAddress(mac);
     await WakeOnLAN(ipv4Address, macAddress).wake();

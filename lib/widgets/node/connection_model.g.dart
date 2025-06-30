@@ -1,47 +1,41 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'node_model.dart';
+part of 'connection_model.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class NodeModelAdapter extends TypeAdapter<NodeModel> {
+class ConnectionModelAdapter extends TypeAdapter<ConnectionModel> {
   @override
-  final int typeId = 3;
+  final int typeId = 4;
 
   @override
-  NodeModel read(BinaryReader reader) {
+  ConnectionModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return NodeModel(
+    return ConnectionModel(
       id: fields[0] as String,
-      title: fields[1] as String,
-      posX: fields[2] as double,
-      posY: fields[3] as double,
-      groupColorValue: fields[4] as int?,
-      noteType: fields[5] as String?,
+      fromId: fields[1] as String,
+      toId: fields[2] as String,
+      type: fields[3] as String,
     );
   }
 
   @override
-  void write(BinaryWriter writer, NodeModel obj) {
+  void write(BinaryWriter writer, ConnectionModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.title)
+      ..write(obj.fromId)
       ..writeByte(2)
-      ..write(obj.posX)
+      ..write(obj.toId)
       ..writeByte(3)
-      ..write(obj.posY)
-      ..writeByte(4)
-      ..write(obj.groupColorValue)
-      ..writeByte(5)
-      ..write(obj.noteType);
+      ..write(obj.type);
   }
 
   @override
@@ -50,7 +44,7 @@ class NodeModelAdapter extends TypeAdapter<NodeModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is NodeModelAdapter &&
+      other is ConnectionModelAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
