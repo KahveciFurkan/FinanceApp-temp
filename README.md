@@ -1,4 +1,4 @@
-# ff
+# financeApp
 
 A new Flutter project.
 
