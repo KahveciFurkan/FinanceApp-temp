@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../helpers/suggestion_logic.dart';
 import '../types/type.dart';
@@ -258,9 +259,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget buildTotalExpenseText() {
     return Text(
-      'Toplam Gider: ${totalYearlyExpense.toStringAsFixed(2)} ₺',
+      'Toplam Gider: ${formatAmount(double.parse(totalYearlyExpense.toString()))} ₺',
       style: const TextStyle(
-        color: Colors.orangeAccent,
+        color: Color.fromARGB(255, 244, 248, 237),
         fontSize: 18,
         fontWeight: FontWeight.bold,
       ),
@@ -273,11 +274,12 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFF1C1C1E),
       appBar: AppBar(
         backgroundColor: const Color(0xFF2C2C2E),
-        title: const Text(
+        title: Text(
           'Harcama Takip',
-          style: TextStyle(
+          style: GoogleFonts.gochiHand(
             color: Colors.orangeAccent,
             fontWeight: FontWeight.bold,
+            fontSize: 24, // dilediğin boyutu ayarlayabilirsin
           ),
         ),
         actions: [

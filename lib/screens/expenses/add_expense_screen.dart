@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
 import '../../types/type.dart';
 import '../../utils/hive/rejected_suggestion.dart';
@@ -264,7 +265,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         iconTheme: const IconThemeData(color: Colors.orangeAccent),
         title: Text(
           isEditing ? 'Gideri Düzenle' : 'Harcama Ekle',
-          style: const TextStyle(color: Colors.orangeAccent),
+          style: GoogleFonts.gochiHand(color: Colors.orangeAccent),
         ),
         centerTitle: true,
         elevation: 0,

@@ -41,60 +41,12 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   Future<void> _addTransaction(SavingsTransaction newTx) async {
-  final box = Hive.box<SavingsTransaction>('transactionsBox');
+    final box = Hive.box<SavingsTransaction>('transactionsBox');
 
-  final totals = _calculateTotals(transactions);
-  // Aynı normalize işlemi burada da olmalı:
-  String currencyKey;
-  switch (newTx.currency.toLowerCase()) {
-    case 'usd':
-    case 'dolar':
-      currencyKey = 'Dolar';
-      break;
-    case 'eur':
-    case 'euro':
-      currencyKey = 'Euro';
-      break;
-    case 'altın':
-    case 'altin':
-      currencyKey = 'Altın';
-      break;
-    case 'gümüş':
-    case 'gumus':
-      currencyKey = 'Gümüş';
-      break;
-    default:
-      currencyKey = newTx.currency; // bilinmeyen
-  }
-
-  final currentAmount = totals[currencyKey] ?? 0;
-
-  if (newTx.type == 'Çekme' && newTx.amount > currentAmount) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Yetersiz bakiye!'),
-        backgroundColor: Colors.redAccent,
-      ),
-    );
-    return;
-  }
-
-  await box.add(newTx);
-  await _loadTransactions();
-}
-
-  Map<String, double> _calculateTotals(List<SavingsTransaction> transactions) {
-  Map<String, double> totals = {
-    'Dolar': 0.0,
-    'Euro': 0.0,
-    'Altın': 0.0,
-    'Gümüş': 0.0,
-  };
-
-  for (var tx in transactions) {
-    // currency normalize et
+    final totals = _calculateTotals(transactions);
+    // Aynı normalize işlemi burada da olmalı:
     String currencyKey;
-    switch (tx.currency.toLowerCase()) {
+    switch (newTx.currency.toLowerCase()) {
       case 'usd':
       case 'dolar':
         currencyKey = 'Dolar';
@@ -112,27 +64,73 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         currencyKey = 'Gümüş';
         break;
       default:
-        continue; // diğer para birimlerini yoksay
+        currencyKey = newTx.currency; // bilinmeyen
     }
 
-    if (tx.type == 'Ekleme') {
-      totals[currencyKey] = totals[currencyKey]! + tx.amount;
-    } else if (tx.type == 'Çekme') {
-      totals[currencyKey] = totals[currencyKey]! - tx.amount;
+    final currentAmount = totals[currencyKey] ?? 0;
+
+    if (newTx.type == 'Çekme' && newTx.amount > currentAmount) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Yetersiz bakiye!'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
     }
+
+    await box.add(newTx);
+    await _loadTransactions();
   }
-  return totals;
-}
 
+  Map<String, double> _calculateTotals(List<SavingsTransaction> transactions) {
+    Map<String, double> totals = {
+      'Dolar': 0.0,
+      'Euro': 0.0,
+      'Altın': 0.0,
+      'Gümüş': 0.0,
+    };
+
+    for (var tx in transactions) {
+      // currency normalize et
+      String currencyKey;
+      switch (tx.currency.toLowerCase()) {
+        case 'usd':
+        case 'dolar':
+          currencyKey = 'Dolar';
+          break;
+        case 'eur':
+        case 'euro':
+          currencyKey = 'Euro';
+          break;
+        case 'altın':
+        case 'altin':
+          currencyKey = 'Altın';
+          break;
+        case 'gümüş':
+        case 'gumus':
+          currencyKey = 'Gümüş';
+          break;
+        default:
+          continue; // diğer para birimlerini yoksay
+      }
+
+      if (tx.type == 'Ekleme') {
+        totals[currencyKey] = totals[currencyKey]! + tx.amount;
+      } else if (tx.type == 'Çekme') {
+        totals[currencyKey] = totals[currencyKey]! - tx.amount;
+      }
+    }
+    return totals;
+  }
 
   Future<void> _loadTransactions() async {
-  final box = Hive.box<SavingsTransaction>('transactionsBox');
-  setState(() {
-    transactions = box.values.toList().cast<SavingsTransaction>();
-    _filterTransactions();
-  });
-}
-
+    final box = Hive.box<SavingsTransaction>('transactionsBox');
+    setState(() {
+      transactions = box.values.toList().cast<SavingsTransaction>();
+      _filterTransactions();
+    });
+  }
 
   void _filterTransactions() {
     setState(() {
@@ -175,20 +173,24 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   Widget _buildSummary(Map<String, double> totals) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8),
-    child: Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        _buildSummaryCard('Dolar', totals['Dolar'] ?? 0, Icons.attach_money),
-        _buildSummaryCard('Euro', totals['Euro'] ?? 0, Icons.euro),
-        _buildSummaryCard('Altın', totals['Altın'] ?? 0, Icons.currency_bitcoin),
-        _buildSummaryCard('Gümüş', totals['Gümüş'] ?? 0, Icons.diamond),
-      ],
-    ),
-  );
-}
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8),
+      child: Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          _buildSummaryCard('Dolar', totals['Dolar'] ?? 0, Icons.attach_money),
+          _buildSummaryCard('Euro', totals['Euro'] ?? 0, Icons.euro),
+          _buildSummaryCard(
+            'Altın',
+            totals['Altın'] ?? 0,
+            Icons.currency_bitcoin,
+          ),
+          _buildSummaryCard('Gümüş', totals['Gümüş'] ?? 0, Icons.diamond),
+        ],
+      ),
+    );
+  }
 
   Widget _buildSummaryCard(String label, double amount, IconData icon) {
     return Container(

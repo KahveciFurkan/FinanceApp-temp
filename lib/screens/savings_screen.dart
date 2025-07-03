@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../widgets/bank_widget.dart';
-import '../widgets/edit_goal_bottom_sheet.dart';
 import '../widgets/savings_goal_item_widget.dart';
-import '../widgets/transaction_list_widget.dart';
-import '../widgets/add_transaction_bottom_sheet.dart';
 import '../types/type.dart';
 
 class SavingsScreen extends StatefulWidget {
@@ -19,15 +17,6 @@ class _SavingsScreenState extends State<SavingsScreen> {
   List<SavingsTransaction> transactions =
       []; // boş başlangıç, istersen örnek veri ekleyebilirsin
 
-  void _showAddTransaction() {
-    // İşlem ekleme popup veya sayfası henüz yoksa basitçe snackbar göster
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('İşlem ekleme fonksiyonu henüz tanımlanmadı'),
-      ),
-    );
-  }
-
   List<SavingsGoal> goals = [
     const SavingsGoal(
       title: 'Tatil',
@@ -39,23 +28,163 @@ class _SavingsScreenState extends State<SavingsScreen> {
   ];
 
   void editGoalPopup(int index) {
-    showModalBottomSheet(
+    final goal = goals[index];
+    final titleController = TextEditingController(text: goal.title);
+    final targetController = TextEditingController(
+      text: goal.targetAmount.toString(),
+    );
+    final savedController = TextEditingController(
+      text: goal.savedAmount.toString(),
+    );
+
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFF2C2C2E),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      builder:
+          (_) => Center(
+            child: SingleChildScrollView(
+              child: AlertDialog(
+                backgroundColor: const Color(0xFF2C2C2E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                titlePadding: const EdgeInsets.only(top: 24),
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '🎯 ',
+                      style: GoogleFonts.gochiHand(
+                        fontSize: 24,
+                        color: Colors.orangeAccent,
+                      ),
+                    ),
+                    Text(
+                      'Hedefi Düzenle',
+                      style: GoogleFonts.gochiHand(
+                        fontSize: 24,
+                        color: Colors.orangeAccent,
+                      ),
+                    ),
+                  ],
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildEmojiTextField(
+                      controller: titleController,
+                      label: '🥅 Başlık',
+                    ),
+                    _buildEmojiTextField(
+                      controller: targetController,
+                      label: '🏆 Hedef Tutar (₺)',
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                    ),
+                    _buildEmojiTextField(
+                      controller: savedController,
+                      label: '💰 Şuanki Birikim (₺)',
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                    ),
+                  ],
+                ),
+                actionsPadding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 24,
+                ),
+                actions: [
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFFAB40), Color(0xFFFF6F00)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(20),
+                        splashColor: Colors.white24,
+                        onTap: () {
+                          final updated = SavingsGoal(
+                            title: titleController.text,
+                            targetAmount:
+                                double.tryParse(targetController.text) ??
+                                goal.targetAmount,
+                            savedAmount:
+                                double.tryParse(savedController.text) ??
+                                goal.savedAmount,
+                          );
+                          setState(() => goals[index] = updated);
+                          Navigator.pop(context);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Kaydet',
+                                style: GoogleFonts.gochiHand(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  // Bu yardımcı method'u SavingsScreen sınıfınızın içine ekleyin:
+  Widget _buildEmojiTextField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.white10,
+          labelStyle: const TextStyle(color: Colors.white70),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        style: const TextStyle(color: Colors.white),
       ),
-      builder: (context) {
-        return EditGoalBottomSheet(
-          goal: goals[index],
-          onSave: (updatedGoal) {
-            setState(() {
-              goals[index] = updatedGoal;
-            });
-          },
-        );
-      },
     );
   }
 

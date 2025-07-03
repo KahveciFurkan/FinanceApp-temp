@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppDrawer extends StatelessWidget {
   final int selectedIndex;
@@ -23,7 +24,7 @@ class AppDrawer extends StatelessWidget {
         leading: Icon(icon, color: isActive ? activeColor : inactiveColor),
         title: Text(
           title,
-          style: TextStyle(
+          style: GoogleFonts.gochiHand(
             color: isActive ? activeColor : inactiveColor,
             fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
           ),
@@ -58,7 +59,7 @@ class AppDrawer extends StatelessWidget {
               ),
               child: Text(
                 'Akıllı Finans Asistanı',
-                style: TextStyle(
+                style: GoogleFonts.gochiHand(
                   color: activeColor,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -71,7 +72,7 @@ class AppDrawer extends StatelessWidget {
             buildMenuItem('Ana Sayfa', Icons.home, 0),
             buildMenuItem('Birikimler', Icons.savings, 1),
             buildMenuItem('Asistan', Icons.assistant, 2),
-            buildMenuItem('İşlemler', Icons.list_alt, 3), // Daha uygun ikon
+            buildMenuItem('Islemler', Icons.list_alt, 3), // Daha uygun ikon
             buildMenuItem('Abonelikler', Icons.autorenew, 4), // Daha uygun ikon
             buildMenuItem('Notlar', Icons.sticky_note_2, 5), // Daha uygun ikon
             const Spacer(),
@@ -79,7 +80,10 @@ class AppDrawer extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Text(
                 '© 2025 FFinity',
-                style: TextStyle(color: inactiveColor, fontSize: 12),
+                style: GoogleFonts.gochiHand(
+                  color: inactiveColor,
+                  fontSize: 18,
+                ),
               ),
             ),
           ],

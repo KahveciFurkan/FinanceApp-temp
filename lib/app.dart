@@ -1,6 +1,7 @@
 import 'package:ff/screens/assistant/assistant_screen.dart';
 import 'package:ff/screens/subscription/subscription_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import './screens/home_screen.dart';
 import './screens/savings_screen.dart';
 import './screens/transactions_screen.dart';
@@ -30,7 +31,7 @@ class _MainScreenState extends State<MainScreen> {
     0: 'Ana Sayfa',
     1: 'Birikimler',
     2: 'Asistan',
-    3: 'İşlemler',
+    3: 'Islemler',
     4: 'Abonelikler',
     5: 'Notlar',
   };
@@ -60,7 +61,7 @@ class _MainScreenState extends State<MainScreen> {
         backgroundColor: const Color(0xFF1C1C1E), // Koyu arka plan
         surfaceTintColor: const Color(0xFF1C1C1E),
         title: Text(_titles[_selectedIndex]!),
-        titleTextStyle: const TextStyle(
+        titleTextStyle: GoogleFonts.gochiHand(
           color: Colors.orangeAccent, // Başlık rengi
           fontWeight: FontWeight.bold,
           fontSize: 22,
