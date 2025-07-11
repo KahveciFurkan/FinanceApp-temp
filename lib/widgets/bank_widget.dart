@@ -1,5 +1,6 @@
 import 'package:ff/utils/helper/helperfunctions.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 
 class PiggyBankWidget extends StatelessWidget {
@@ -46,10 +47,11 @@ class PiggyBankWidget extends StatelessWidget {
           ),
           const SizedBox(height: 32),
           Text(
-            'Toplam',
-            style: theme.textTheme.titleLarge?.copyWith(
+            'TOPLAM BIRIKIM',
+            style: GoogleFonts.gochiHand().copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.greenAccent,
+              color: const Color.fromARGB(255, 234, 235, 229),
+              fontSize: 24,
             ),
           ),
           const SizedBox(height: 8),

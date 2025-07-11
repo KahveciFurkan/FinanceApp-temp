@@ -2,15 +2,18 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:intl/intl.dart';
 import '../helpers/suggestion_logic.dart';
 import '../types/type.dart';
 import 'package:wake_on_lan/wake_on_lan.dart';
 import '../utils/helper/helperfunctions.dart';
 import '../widgets/expensefab/expensefab.dart';
 import '../widgets/expensefab/recent_expense_card.dart';
+import 'assistant/voice_methods.dart';
 import 'expenses/add_expense_screen.dart';
 import 'package:http/http.dart' as http;
 import 'expenses/expense_adapter.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 /// Renk koyulaştırma fonksiyonu
 Color darkenColor(Color color, [double amount = .2]) {
@@ -21,13 +24,16 @@ Color darkenColor(Color color, [double amount = .2]) {
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
-
+  static final GlobalKey<_HomeScreenState> globalKey =
+      GlobalKey<_HomeScreenState>();
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   late final SuggestionService _suggester;
+  late stt.SpeechToText _speech;
+  bool _listening = false;
 
   int _pressedIndex = -1;
   Map<int, List<Expense>> yearlyExpenses = {};
@@ -35,7 +41,21 @@ class _HomeScreenState extends State<HomeScreen> {
   int selectedMonthIndex = -1;
   bool isLoading = true;
   bool isPcOn = false;
-
+  static const _monthMap = {
+    'Oca': 'Ocak',
+    'Şub': 'Şubat',
+    'Mar': 'Mart',
+    'Nis': 'Nisan',
+    'May': 'Mayıs',
+    'Haz': 'Haziran',
+    'Tem': 'Temmuz',
+    'Ağu': 'Ağustos',
+    'Eyl': 'Eylül',
+    'Eki': 'Ekim',
+    'Kas': 'Kasım',
+    'Ara': 'Aralık',
+  };
+  static final _monthKeys = _monthMap.keys.toList();
   @override
   void initState() {
     super.initState();
@@ -46,6 +66,33 @@ class _HomeScreenState extends State<HomeScreen> {
       'Eğlence': 1500.0,
     });
     initHiveAndLoad();
+    _initSpeech();
+  }
+
+  void _initSpeech() async {
+    _speech = stt.SpeechToText();
+    final available = await _speech.initialize();
+    if (!available) return;
+
+    setState(() => _listening = true);
+    _speech.listen(
+      onResult: (res) {
+        if (res.finalResult) {
+          _processCommand(res.recognizedWords.toLowerCase());
+        }
+      },
+      listenFor: const Duration(seconds: 10),
+      localeId: 'tr_TR',
+      cancelOnError: true,
+    );
+    Future.delayed(const Duration(seconds: 10), () {
+      _speech.stop();
+      setState(() => _listening = false);
+    });
+  }
+
+  void _processCommand(String cmd) {
+    VoiceMethods.handleCommand(cmd, context);
   }
 
   Future<void> initHiveAndLoad() async {
@@ -217,37 +264,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       : maxV == 0
                       ? 0.0
                       : (val / maxV) * 150;
-              final sel = selectedMonthIndex == i;
+              final selected = selectedMonthIndex == i;
               return GestureDetector(
                 onTap: () {
                   setState(() => selectedMonthIndex = i);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '${monthMap[keys[i]]}: $val ₺',
-                        style: const TextStyle(color: Colors.black87),
-                      ),
-                      backgroundColor: Colors.orangeAccent,
-                    ),
-                  );
+                  _showMonthDetail(i);
                 },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      width: bw,
-                      height: h,
-                      decoration: BoxDecoration(
-                        color: sel ? Colors.orangeAccent : Colors.grey[700],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      keys[i],
-                      style: const TextStyle(color: Colors.orangeAccent),
-                    ),
-                  ],
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: bw,
+                  height: h,
+                  decoration: BoxDecoration(
+                    color: selected ? Colors.orangeAccent : Colors.grey[700],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
                 ),
               );
             }),
@@ -265,6 +295,122 @@ class _HomeScreenState extends State<HomeScreen> {
         fontSize: 18,
         fontWeight: FontWeight.bold,
       ),
+    );
+  }
+
+  void _showMonthDetail(int monthIndex) {
+    final total = currentYearExpenses[monthIndex];
+    final expenses =
+        yearlyExpenses[selectedYear]
+            ?.where((e) => e.date.month == monthIndex + 1)
+            .toList() ??
+        [];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color.fromARGB(
+        0,
+        159,
+        238,
+        11,
+      ), // artık transparan değil
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder:
+          (_) => DraggableScrollableSheet(
+            initialChildSize: 0.5,
+            maxChildSize: 0.85,
+            minChildSize: 0.3,
+            expand: false,
+            builder:
+                (_, controller) => Container(
+                  decoration: const BoxDecoration(
+                    color: Color.fromARGB(255, 61, 60, 60),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[600],
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Text(
+                        '${_monthMap[_monthKeys[monthIndex]]}  $total ₺',
+                        style: const TextStyle(
+                          color: Colors.orangeAccent,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child:
+                            expenses.isEmpty
+                                ? const Center(
+                                  child: Text(
+                                    'Bu ay için harcama bulunamadı.',
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                                )
+                                : ListView.separated(
+                                  controller: controller,
+                                  itemCount: expenses.length,
+                                  separatorBuilder:
+                                      (_, __) =>
+                                          const Divider(color: Colors.grey),
+                                  itemBuilder: (_, i) {
+                                    final e = expenses[i];
+                                    return ListTile(
+                                      leading: CircleAvatar(
+                                        backgroundColor: Colors.orangeAccent,
+                                        child: Text(
+                                          DateFormat('d').format(e.date),
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                      title: Text(
+                                        e.category,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        DateFormat(
+                                          'dd MMM yyyy, HH:mm',
+                                        ).format(e.date),
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
+                                      ),
+                                      trailing: Text(
+                                        '${e.amount.toStringAsFixed(2)} ₺',
+                                        style: const TextStyle(
+                                          color: Colors.orangeAccent,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                      ),
+                    ],
+                  ),
+                ),
+          ),
     );
   }
 
@@ -289,6 +435,13 @@ class _HomeScreenState extends State<HomeScreen> {
               color: Colors.orangeAccent,
             ),
             onPressed: showAdminPasswordDialog,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Icon(
+              _listening ? Icons.mic : Icons.mic_none,
+              color: _listening ? Colors.redAccent : Colors.white70,
+            ),
           ),
           IconButton(
             icon: Icon(
