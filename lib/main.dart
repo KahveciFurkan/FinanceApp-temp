@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import './types/type.dart';
 import './types/savings_transaction_adapter.dart';
-import 'screens/assistant/smart_assistant_service.dart';
 import 'screens/splash/splash_screen.dart';
 import 'service/weather_notifier.dart';
 import 'types/node_model.dart';
@@ -15,7 +14,6 @@ import 'widgets/node/connection_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await SimpleAssistantService.instance.initialize();
   await Hive.initFlutter();
   Intl.defaultLocale = 'tr_TR';
   await initializeDateFormatting('tr_TR');
